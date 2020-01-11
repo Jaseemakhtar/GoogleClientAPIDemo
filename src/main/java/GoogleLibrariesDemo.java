@@ -13,25 +13,26 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.blogger.Blogger;
 import com.google.api.services.blogger.BloggerScopes;
-import com.sun.org.apache.xpath.internal.operations.Plus;
+import com.google.api.services.blogger.model.Blog;
+import com.google.api.services.blogger.model.Post;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.GeneralSecurityException;
 import java.util.Collections;
 
 
 
 public class GoogleLibrariesDemo {
     public static final String APP_NAME = "Google Libraries";
+    public static final String BLOG_URL = "https://relatedposttest.blogspot.com";
+    public static final String BLOG_ID = "4417696787443174159";
+    public static final String POST_ID = "3293781334946994615";
 
     private static FileDataStoreFactory dataStoreFactory;
     private static HttpTransport httpTransport;
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static java.io.File DATA_STORE_DIR;
+    private static java.io.File DATA_STORE_DIR = new java.io.File(System.getProperty("user.home"), ".store/plus_sample");;
 
     private static Credential authorize() throws Exception {
-        DATA_STORE_DIR = new java.io.File(System.getProperty("user.home"), ".store/plus_sample");
         FileDataStoreFactory dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
 
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
@@ -55,8 +56,28 @@ public class GoogleLibrariesDemo {
         Blogger blogger = new Blogger.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(APP_NAME).setHttpRequestInitializer(credential)
                 .build();
 
-        Blogger.Blogs.GetByUrl getByUrl =  blogger.blogs().getByUrl("");
+        //Blogger.Blogs.GetByUrl getByUrl =  blogger.blogs().getByUrl(BLOG_URL);
+        //Blogger.Blogs.Get get = blogger.blogs().get("4417696787443174159");
+        Blogger.Posts.Get getPost = blogger.posts().get(BLOG_ID, POST_ID + "");
+        println("Is Empty: " + getPost.isEmpty());
 
+        Post post = getPost.execute();
+
+        /*println("Blogger ID: " + blog.getId());
+        println("Blogger Name: " + blog.getName());
+        println("Blogger Posts: " + blog.getPosts().getTotalItems());
+        println("Blogger Description: " + blog.getDescription());*/
+
+        println("Post ID: " + post.getId());
+        println("Post Name: " + post.getTitle());
+        println("Post Content: " + post.getContent());
+
+
+
+    }
+
+    public static void println(Object o){
+        System.out.println(o);
     }
 
 }
