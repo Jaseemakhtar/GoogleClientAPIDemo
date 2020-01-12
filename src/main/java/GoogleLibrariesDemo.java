@@ -2,12 +2,10 @@ package main.java;
 
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.auth.oauth2.DataStoreCredentialRefreshListener;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -15,10 +13,9 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.blogger.Blogger;
 import com.google.api.services.blogger.BloggerScopes;
-import com.google.api.services.blogger.model.Blog;
 import com.google.api.services.blogger.model.Post;
-import org.apache.http.impl.client.SystemDefaultCredentialsProvider;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collections;
 
@@ -32,7 +29,7 @@ public class GoogleLibrariesDemo {
     private static FileDataStoreFactory dataStoreFactory;
     private static HttpTransport httpTransport;
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static java.io.File DATA_STORE_DIR = new java.io.File(System.getProperty("user.home"), ".store/klrt");;
+    private static java.io.File DATA_STORE_DIR = new java.io.File(System.getProperty("user.home"), ".store/klrt2");;
 
     private static Credential authorize() throws Exception {
         FileDataStoreFactory dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
@@ -55,8 +52,15 @@ public class GoogleLibrariesDemo {
             println("Already authenticated");
             return credential;
         }else {
-            println("Not authenticated");
-            return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
+            try {
+                println("Not authenticated");
+                LocalServerReceiver localServerReceiver = new LocalServerReceiver();
+                credential = new AuthorizationCodeInstalledApp(flow, localServerReceiver).authorize("user");
+                return credential;
+            }catch (IOException  e){
+                println("Error: " + e.getMessage());
+            }
+            return null;
         }
     }
 
@@ -65,6 +69,7 @@ public class GoogleLibrariesDemo {
         dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
 
         Credential credential = authorize();
+
 
         Blogger blogger = new Blogger.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(APP_NAME).setHttpRequestInitializer(credential)
                 .build();
